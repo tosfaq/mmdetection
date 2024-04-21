@@ -28,6 +28,63 @@ except ImportError:
 
 
 @MODELS.register_module()
+class SimpleDetDataPreprocessor(BaseDataPreprocessor):
+    """Simplified pre-processor for detection tasks, focused on padding images."""
+
+    def __init__(self,
+                 pad_size_divisor=1,
+                 pad_value=0,
+                 non_blocking=False):
+        super().__init__()
+        self.pad_size_divisor = pad_size_divisor
+        self.pad_value = pad_value
+        self.non_blocking = non_blocking
+
+    def forward(self, data: dict, training: bool = False) -> dict:
+        """Perform padding to ensure all images in a batch have the same size.
+
+        Args:
+            data (dict): Data from the data loader.
+            training (bool): Whether the model is in training mode.
+
+        Returns:
+            dict: Preprocessed data ready for model input.
+        """
+        # Collate inputs
+        inputs = data.get('inputs')
+        if isinstance(inputs, list):
+            # Find the maximum dimensions in the batch
+            max_height = max(input.shape[2] for input in inputs)
+            max_width = max(input.shape[3] for input in inputs)
+            # Compute padding needs
+            padded_inputs = []
+            for input in inputs:
+                pad_height = ((max_height - input.shape[2]) + self.pad_size_divisor - 1) // self.pad_size_divisor * self.pad_size_divisor
+                pad_width = ((max_width - input.shape[3]) + self.pad_size_divisor - 1) // self.pad_size_divisor * self.pad_size_divisor
+                # Apply padding
+                padded_input = torch.nn.functional.pad(input, (0, pad_width, 0, pad_height), value=self.pad_value)
+                padded_inputs.append(padded_input)
+            # Stack the padded inputs
+            inputs = torch.stack(padded_inputs)
+        elif isinstance(inputs, torch.Tensor):
+            # If inputs are already a batch tensor, ensure it's properly padded
+            h, w = inputs.shape[2], inputs.shape[3]
+            target_h = ((h + self.pad_size_divisor - 1) // self.pad_size_divisor) * self.pad_size_divisor
+            target_w = ((w + self.pad_size_divisor - 1) // self.pad_size_divisor) * self.pad_size_divisor
+            pad_h = target_h - h
+            pad_w = target_w - w
+            inputs = torch.nn.functional.pad(inputs, (0, pad_w, 0, pad_h), value=self.pad_value)
+
+        # Update data dictionary with padded inputs
+        data['inputs'] = inputs
+
+        return data
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(pad_size_divisor={self.pad_size_divisor}, pad_value={self.pad_value}, non_blocking={self.non_blocking})"
+
+
+@MODELS.register_module()
 class DetDataPreprocessor(ImgDataPreprocessor):
     """Image pre-processor for detection tasks.
 

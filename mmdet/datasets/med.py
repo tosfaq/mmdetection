@@ -18,13 +18,11 @@ class MedicalDataset(BaseDetDataset):
         data_root = /kaggle/input/coco-med-output-ring-exp1/coco_med_output_ring_exp1/
         ann_file = med/train.txt
         """
-        super().__init__(**kwargs)
-        self.data_root = data_root
-        # self.data_prefix = data_prefix
-        self.ann_file = ann_file  # This should be the .txt file with image paths
+        # self.ann_file = ann_file  # This should be the .txt file with image paths
 
         self.img_files = self.load_image_paths(osp.join(data_root, ann_file))
         self.label_files = self._img2label_paths(self.img_files)
+        super().__init__(data_root=data_root, ann_file=ann_file, **kwargs)
 
     def load_image_paths(self, txt_path):
         """Load image file paths from a txt file."""
