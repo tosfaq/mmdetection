@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .ade20k import (ADE20KInstanceDataset, ADE20KPanopticDataset,
                      ADE20KSegDataset)
+from .med import MedicalDataset
 from .base_det_dataset import BaseDetDataset
 from .base_semseg_dataset import BaseSegDataset
 from .base_video_dataset import BaseVideoDataset
@@ -36,7 +37,7 @@ from .xml_style import XMLDataset
 from .youtube_vis_dataset import YouTubeVISDataset
 
 __all__ = [
-    'XMLDataset', 'CocoDataset', 'DeepFashionDataset', 'VOCDataset',
+    'MedicalDataset', 'XMLDataset', 'CocoDataset', 'DeepFashionDataset', 'VOCDataset',
     'CityscapesDataset', 'LVISDataset', 'LVISV05Dataset', 'LVISV1Dataset',
     'WIDERFaceDataset', 'get_loading_pipeline', 'CocoPanopticDataset',
     'MultiImageMixDataset', 'OpenImagesDataset', 'OpenImagesChallengeDataset',
