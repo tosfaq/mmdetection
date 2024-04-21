@@ -5,6 +5,8 @@ import mmcv
 import numpy as np
 import pycocotools.mask as maskUtils
 import torch
+import pydicom
+from pydicom.pixel_data_handlers import apply_modality_lut
 from mmcv.transforms import BaseTransform
 from mmcv.transforms import LoadAnnotations as MMCV_LoadAnnotations
 from mmcv.transforms import LoadImageFromFile
@@ -15,6 +17,111 @@ from mmdet.registry import TRANSFORMS
 from mmdet.structures.bbox import get_box_type
 from mmdet.structures.bbox.box_type import autocast_box_type
 from mmdet.structures.mask import BitmapMasks, PolygonMasks
+
+
+def load_dicom(img_path, universal_bg=True):
+    if 'npy' in img_path:
+        img = np.load(img_path)
+    else:
+        dicom = pydicom.dcmread(img_path)
+        assert dicom[0x00080060].value == 'CT', f'image modality is not CT ({dicom[0x00080060].value})'
+        assert hasattr(dicom, "ImagePositionPatient"), 'image has no ImagePositionPatient attribute'
+        img = apply_modality_lut(dicom.pixel_array, dicom).astype('float32')
+    if universal_bg:
+        img[img.astype(int) == -3024] = -2048.
+    return img
+
+
+@TRANSFORMS.register_module()
+class LoadDicomImage(BaseTransform):
+    """Custom loader for DICOM images that supports configurable image processing.
+
+    Required Keys:
+
+    - img_path
+
+    Modified Keys:
+
+    - img
+    - img_shape
+    - ori_shape
+
+    Args:
+        to_float32 (bool): Whether to convert the loaded image to a float32
+            numpy array. If set to False, the loaded image is an uint8 array.
+            Defaults to False.
+        color_type (str): The flag argument for :func:`mmcv.imfrombytes`.
+            Defaults to 'color'.
+        imdecode_backend (str): The image decoding backend type. The backend
+            argument for :func:`mmcv.imfrombytes`.
+            See :func:`mmcv.imfrombytes` for details.
+            Defaults to 'cv2'.
+        file_client_args (dict, optional): Arguments to instantiate a
+            FileClient. See :class:`mmengine.fileio.FileClient` for details.
+            Defaults to None. It will be deprecated in future. Please use
+            ``backend_args`` instead.
+            Deprecated in version 2.0.0rc4.
+        ignore_empty (bool): Whether to allow loading empty image or file path
+            not existent. Defaults to False.
+        backend_args (dict, optional): Instantiates the corresponding file
+            backend. It may contain `backend` key to specify the file
+            backend. If it contains, the file backend corresponding to this
+            value will be used and initialized with the remaining values,
+            otherwise the corresponding file backend will be selected
+            based on the prefix of the file path. Defaults to None.
+            New in version 2.0.0rc4.
+    """
+
+    def __init__(self, process_cfg=None, universal_bg=True):
+        """
+        Args:
+            process_cfg (dict): Configuration for image processing. It should have
+                                the 'type' key (either 'normalize' or 'window') and
+                                corresponding parameters:
+                                - 'normalize': {'mean': value, 'std': value}
+                                - 'window': [{'level': value, 'width': value}, ...]
+            universal_bg (bool): Whether to cast -3024. bg to more common -2048.
+        """
+        self.process_cfg = process_cfg or {}
+        self.universal_bg = universal_bg
+
+    def transform(self, results):
+        """Load and process DICOM image."""
+        img_path = results['img_path']
+
+        img = load_dicom(img_path, universal_bg=self.universal_bg)
+
+        process_type = self.process_cfg.get('type')
+        if process_type == 'window':
+            img = self._apply_windowing(img, self.process_cfg['window'])
+        elif process_type == 'normalize':
+            img = self._normalize_image(img, **self.process_cfg['normalize'])
+
+        results['img'] = img
+        results['img_shape'] = img.shape
+        results['ori_shape'] = img.shape
+        return results
+
+    def _apply_windowing(self, img, windows):
+        """Apply multiple window settings to generate multiple channels."""
+        windows_img = []
+        for window in windows:
+            lower = window['level'] - window['width'] / 2
+            upper = window['level'] + window['width'] / 2
+            windowed_img = np.clip(img, lower, upper)
+            windowed_img = (windowed_img - lower) / (upper - lower)
+            windows_img.append(windowed_img)
+
+        # Stack along channel axis
+        return np.stack(windows_img, axis=-1)
+
+    def _normalize_image(self, img, mean, std):
+        """Apply normalization using mean and std."""
+        img = (img - mean) / std
+        return img
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(process_cfg={self.process_cfg})"
 
 
 @TRANSFORMS.register_module()
@@ -149,6 +256,35 @@ class LoadMultiChannelImageFromFiles(BaseTransform):
                     f"imdecode_backend='{self.imdecode_backend}', "
                     f'backend_args={self.backend_args})')
         return repr_str
+
+
+@TRANSFORMS.register_module()
+class LoadYOLOAnnotations(BaseTransform):
+    def __init__(self, with_bbox=True):
+        self.with_bbox = with_bbox
+
+    def transform(self, results):
+        img_shape = results['img_shape']  # Assuming 'img_shape' is populated elsewhere in the pipeline
+        label_path = results['label_path']  # You need to ensure this is added to results dict by your dataset class
+        bboxes = []
+        labels = []
+
+        with open(label_path, 'r') as file:
+            for line in file:
+                parts = line.strip().split()
+                if len(parts) == 5:
+                    # Convert from YOLO format (normalized cx, cy, w, h) to (x1, y1, x2, y2)
+                    class_id, cx, cy, w, h = map(float, parts)
+                    x1 = (cx - w / 2) * img_shape[1]  # img_shape[width, height]
+                    y1 = (cy - h / 2) * img_shape[0]
+                    x2 = (cx + w / 2) * img_shape[1]
+                    y2 = (cy + h / 2) * img_shape[0]
+                    bboxes.append([x1, y1, x2, y2])
+                    labels.append(int(class_id))
+
+        results['gt_bboxes'] = np.array(bboxes, dtype=np.float32)
+        results['gt_labels'] = np.array(labels, dtype=np.int64)
+        return results
 
 
 @TRANSFORMS.register_module()
