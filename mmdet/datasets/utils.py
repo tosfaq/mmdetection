@@ -2,7 +2,7 @@
 
 from mmcv.transforms import LoadImageFromFile
 
-from mmdet.datasets.transforms import LoadAnnotations, LoadPanopticAnnotations
+from mmdet.datasets.transforms import LoadAnnotations, LoadPanopticAnnotations, LoadDicomImage
 from mmdet.registry import TRANSFORMS
 
 
@@ -40,7 +40,8 @@ def get_loading_pipeline(pipeline):
         # TODO:use more elegant way to distinguish loading modules
         if obj_cls is not None and obj_cls in (LoadImageFromFile,
                                                LoadAnnotations,
-                                               LoadPanopticAnnotations):
+                                               LoadPanopticAnnotations,
+                                               LoadDicomImage):
             loading_pipeline_cfg.append(cfg)
     assert len(loading_pipeline_cfg) == 2, \
         'The data pipeline in your config file must include ' \
