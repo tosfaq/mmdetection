@@ -3,7 +3,7 @@ from mmengine.fileio import get_local_path
 from mmdet.registry import DATASETS
 from .base_det_dataset import BaseDetDataset
 
-from transforms.loading import load_dicom
+from .transforms.loading import load_dicom
 
 import os
 import numpy as np
