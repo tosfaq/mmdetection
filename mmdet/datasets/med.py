@@ -82,7 +82,7 @@ class MedicalDataset(BaseDetDataset):
             y_max = y_center_abs + (h_abs / 2)
 
             annotations.append({
-                'bbox_label': bbox_label,
+                'bbox_label': int(cls),
                 # 'category_id': int(cls),
                 'bbox': [x_min, y_min, x_max, y_max],
                 # 'area': w_abs * h_abs,
