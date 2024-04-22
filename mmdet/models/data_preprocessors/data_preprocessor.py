@@ -54,6 +54,7 @@ class SimpleDetDataPreprocessor(BaseDataPreprocessor):
         inputs = data.get('inputs')
         if isinstance(inputs, list):
             # Find the maximum dimensions in the batch
+            print("Shapes:\n", [input.shape for input in inputs])
             max_height = max(input.shape[2] for input in inputs)
             max_width = max(input.shape[3] for input in inputs)
             # Compute padding needs
