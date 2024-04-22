@@ -96,7 +96,7 @@ class LoadDicomImage(BaseTransform):
             img = self._apply_windowing(img, self.process_cfg['window'])
         elif process_type == 'normalize':
             img = self._normalize_image(img, **self.process_cfg['normalize'])
-            img = img.unsqueeze(-1)
+            img = img[..., np.newaxis]
 
         results['img'] = img
         results['img_shape'] = img.shape
