@@ -42,20 +42,23 @@ class MedicalDataset(BaseDetDataset):
         return [img_path.replace(sa, sb, 1).rsplit('.', 1)[0] + ".txt" for img_path in img_paths]
 
     def load_data_list(self) -> list:
-        """Load image and annotation data."""
-        data_list = []
+        """Load image and annotation data, adapting to the desired output format."""
+        data_infos = []
         for i, (img_path, label_path) in enumerate(zip(self.img_files, self.label_files)):
             img = load_dicom(img_path)
-            height, width = img.shape
-            img_info = {
-                'file_name': osp.basename(img_path),
-                'height': height,  # should be set correctly based on actual image read
-                'width': width,  # should be set correctly
-                'id': i  # osp.splitext(osp.basename(img_path))[0]
+            height, width = img.shape[:2]  # Ensure you're only getting height and width
+            instances = self._load_annotations(label_path, width, height)
+
+            # Format the dictionary to match the target format
+            data_info = {
+                'img_path': img_path,
+                'img_id': i,
+                'width': width,
+                'height': height,
+                'instances': instances
             }
-            ann_info = self._load_annotations(label_path, width, height)
-            data_list.append({'img_info': img_info, 'ann_info': ann_info})
-        return data_list
+            data_infos.append(data_info)
+        return data_infos
 
     def _load_annotations(self, label_path, width, height):
         """Load annotations and convert from relative to absolute coordinates."""
@@ -79,9 +82,10 @@ class MedicalDataset(BaseDetDataset):
             y_max = y_center_abs + (h_abs / 2)
 
             annotations.append({
-                'category_id': int(cls),
+                'bbox_label': bbox_label,
+                # 'category_id': int(cls),
                 'bbox': [x_min, y_min, x_max, y_max],
-                'area': w_abs * h_abs,
+                # 'area': w_abs * h_abs,
             })
         return annotations
 
