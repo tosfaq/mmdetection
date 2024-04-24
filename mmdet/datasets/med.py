@@ -46,7 +46,7 @@ class MedicalDataset(BaseDetDataset):
         data_infos = []
         for i, (img_path, label_path) in enumerate(zip(self.img_files, self.label_files)):
             img = load_dicom(img_path)
-            height, width = img.shape[:2]  # Ensure you're only getting height and width
+            height, width = img.shape[:2]
             instances = self._load_annotations(label_path, width, height)
 
             # Format the dictionary to match the target format

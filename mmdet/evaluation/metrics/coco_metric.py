@@ -376,10 +376,33 @@ class CocoMetric(BaseMetric):
             gt['img_id'] = data_sample['img_id']
             if self._coco_api is None:
                 # TODO: Need to refactor to support LoadAnnotations
-                assert 'instances' in data_sample, \
+                # assert 'instances' in data_sample, \
+                #     'ground truth is required for evaluation when ' \
+                #     '`ann_file` is not provided'
+                # gt['anns'] = data_sample['instances']
+
+                # 'instances':
+                # [
+                #     {
+                #         # List of 4 numbers representing the bounding box of the
+                #         # instance, in (x1, y1, x2, y2) order.
+                #         'bbox': [x1, y1, x2, y2],
+                #         # Label of image classification.
+                #         'bbox_label': 1,
+                #     }
+                # ]
+
+                assert 'gt_instances' in data_sample, \
                     'ground truth is required for evaluation when ' \
                     '`ann_file` is not provided'
-                gt['anns'] = data_sample['instances']
+
+                gt['anns'] = []
+
+                boxes = data_sample['gt_instances']['bboxes'].detach().cpu().numpy()
+                labels = data_sample['gt_instances']['labels'].detach().cpu().numpy()
+
+                for bbox, label in zip(boxes, labels):
+                    gt['anns'].append({'bbox': bbox, 'bbox_label': label})
             # add converted result to the results list
             self.results.append((gt, result))
 
