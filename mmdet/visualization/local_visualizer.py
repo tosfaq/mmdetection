@@ -45,6 +45,12 @@ class DetLocalVisualizer(Visualizer):
             Defaults to 3.
         alpha (int, float): The transparency of bboxes or mask.
             Defaults to 0.8.
+        is_hu (bool): Whether the image is in Hounsfield Units.
+            Defaults to False.
+        window_level (int, float): Level for CT windowing. Used only if is_hu is True.
+            Defaults to 0.
+        window_width (int, float): Width for CT windowing. Used only if is_hu is True.
+            Defaults to 4500.
 
     Examples:
         >>> import numpy as np
@@ -89,7 +95,10 @@ class DetLocalVisualizer(Visualizer):
                                             Tuple[int]]] = (200, 200, 200),
                  mask_color: Optional[Union[str, Tuple[int]]] = None,
                  line_width: Union[int, float] = 3,
-                 alpha: float = 0.8) -> None:
+                 alpha: float = 0.8,
+                 is_hu: bool = False,
+                 window_level: int = 0,
+                 window_width: int = 4500) -> None:
         super().__init__(
             name=name,
             image=image,
@@ -100,6 +109,9 @@ class DetLocalVisualizer(Visualizer):
         self.mask_color = mask_color
         self.line_width = line_width
         self.alpha = alpha
+        self.is_hu = is_hu
+        self.window_level = window_level
+        self.window_width = window_width
         # Set default value. When calling
         # `DetLocalVisualizer().dataset_meta=xxx`,
         # it will override the default value.
@@ -430,7 +442,12 @@ class DetLocalVisualizer(Visualizer):
                 and masks. Defaults to 0.3.
             step (int): Global step value to record. Defaults to 0.
         """
-        image = image.clip(0, 255).astype(np.uint8)
+        if self.is_hu:
+            minval = self.window_level - (self.window_width / 2)
+            maxval = self.window_level + (self.window_width / 2)
+            image = ((image - minval) / (maxval - minval) * 255).clip(0, 255).astype(np.uint8)
+        else:
+            image = image.clip(0, 255).astype(np.uint8)
         classes = self.dataset_meta.get('classes', None)
         palette = self.dataset_meta.get('palette', None)
 
