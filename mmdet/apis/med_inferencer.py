@@ -474,12 +474,10 @@ class MedInferencer(BaseInferencer):
 
         for single_input, pred in zip(inputs, preds):
             if isinstance(single_input, str):
-                img_bytes = mmengine.fileio.get(single_input)
-                img = mmcv.imfrombytes(img_bytes)
-                print(type(img))
-                if type(img) == torch.Tensor or type(img) == np.ndarray:
-                    print(img.shape)
-                img = img[:, :, ::-1]
+                img = self.preprocess(single_input)
+                #img_bytes = mmengine.fileio.get(single_input)
+                #img = mmcv.imfrombytes(img_bytes)
+                #img = img[:, :, ::-1]
                 img_name = osp.basename(single_input)
             elif isinstance(single_input, np.ndarray):
                 img = single_input.copy()
