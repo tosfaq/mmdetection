@@ -518,7 +518,12 @@ class DetLocalVisualizer(Visualizer):
             self.show(drawn_img, win_name=name, wait_time=wait_time)
 
         if out_file is not None:
-            mmcv.imwrite(drawn_img[..., ::-1], out_file)
+            if len(drawn_img.shape) == 3:
+                drawn_img = drawn_img[..., ::-1]
+            if '.jpeg' not in out_file or '.jpg' not in out_file:
+                mmcv.imwrite(drawn_img, out_file+'.jpeg')
+            else:
+                mmcv.imwrite(drawn_img, out_file)
         else:
             self.add_image(name, drawn_img, step)
 
