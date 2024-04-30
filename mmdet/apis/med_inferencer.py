@@ -473,6 +473,7 @@ class MedInferencer(BaseInferencer):
         results = []
 
         for single_input, pred in zip(self.preprocess(inputs), preds):
+            print(single_input)
             if isinstance(single_input[0], str):
                 img = single_input[0]
                 #img_bytes = mmengine.fileio.get(single_input)
