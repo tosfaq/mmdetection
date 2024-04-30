@@ -9,7 +9,7 @@ import mmengine
 import numpy as np
 import torch.nn as nn
 from mmcv.transforms import LoadImageFromFile
-from ..datasets.transforms.loading import LoadDicomImage
+from ..datasets.transforms.loading import LoadDicomImage, load_dicom
 from mmengine.dataset import Compose
 from mmengine.fileio import (get_file_backend, isdir, join_path,
                              list_dir_or_file)
@@ -90,7 +90,10 @@ class MedInferencer(BaseInferencer):
                  device: Optional[str] = None,
                  scope: Optional[str] = 'mmdet',
                  palette: str = 'none',
-                 show_progress: bool = True) -> None:
+                 show_progress: bool = True,
+                 window_level: int = 0,
+                 window_width: int = 4500,
+                 universal_bg: bool = True) -> None:
         # A global counter tracking the number of images processed, for
         # naming of the output images
         self.num_visualized_imgs = 0
@@ -101,6 +104,9 @@ class MedInferencer(BaseInferencer):
             model=model, weights=weights, device=device, scope=scope)
         self.model = revert_sync_batchnorm(self.model)
         self.show_progress = show_progress
+        self.window_level = window_level
+        self.window_width = window_width
+        self.universal_bg = universal_bg
 
     def _load_weights_to_model(self, model: nn.Module,
                                checkpoint: Optional[dict],
@@ -472,13 +478,12 @@ class MedInferencer(BaseInferencer):
 
         results = []
 
-        for single_input, pred in zip(self.preprocess(inputs), preds):
-            print(single_input)
-            if isinstance(single_input[0], str):
-                img = single_input[0]
-                #img_bytes = mmengine.fileio.get(single_input)
-                #img = mmcv.imfrombytes(img_bytes)
-                #img = img[:, :, ::-1]
+        for single_input, pred in zip(inputs, preds):
+            if isinstance(single_input, str):
+                img = load_dicom(img_path, universal_bg=self.universal_bg)
+                minval = self.window_level - (self.window_width / 2)
+                maxval = self.window_level + (self.window_width / 2)
+                img = ((img - minval) / (maxval - minval) * 255).clip(0, 255).astype(np.uint8)
                 img_name = osp.basename(single_input)
             elif isinstance(single_input, np.ndarray):
                 img = single_input.copy()
