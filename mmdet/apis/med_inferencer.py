@@ -476,6 +476,9 @@ class MedInferencer(BaseInferencer):
             if isinstance(single_input, str):
                 img_bytes = mmengine.fileio.get(single_input)
                 img = mmcv.imfrombytes(img_bytes)
+                print(type(img))
+                if type(img) == torch.Tensor or type(img) == np.ndarray:
+                    print(img.shape)
                 img = img[:, :, ::-1]
                 img_name = osp.basename(single_input)
             elif isinstance(single_input, np.ndarray):
