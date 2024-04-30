@@ -480,7 +480,7 @@ class MedInferencer(BaseInferencer):
 
         for single_input, pred in zip(inputs, preds):
             if isinstance(single_input, str):
-                img = load_dicom(img_path, universal_bg=self.universal_bg)
+                img = load_dicom(single_input, universal_bg=self.universal_bg)
                 minval = self.window_level - (self.window_width / 2)
                 maxval = self.window_level + (self.window_width / 2)
                 img = ((img - minval) / (maxval - minval) * 255).clip(0, 255).astype(np.uint8)
