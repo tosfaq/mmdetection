@@ -1036,8 +1036,8 @@ class MedInferencerLoader(BaseTransform):
         super().__init__()
         self.from_file = TRANSFORMS.build(
             dict(type='LoadDicomImage', **kwargs))
-        self.from_ndarray = TRANSFORMS.build(
-            dict(type='mmdet.LoadImageFromNDArray', **kwargs))
+        #self.from_ndarray = TRANSFORMS.build(
+        #    dict(type='mmdet.LoadImageFromNDArray', **kwargs))
 
     def transform(self, results: Union[str, np.ndarray, dict]) -> dict:
         """Transform function to add image meta information.
@@ -1050,15 +1050,15 @@ class MedInferencerLoader(BaseTransform):
         """
         if isinstance(results, str):
             inputs = dict(img_path=results)
-        elif isinstance(results, np.ndarray):
-            inputs = dict(img=results)
+        #elif isinstance(results, np.ndarray):
+        #    inputs = dict(img=results)
         elif isinstance(results, dict):
             inputs = results
         else:
             raise NotImplementedError
 
-        if 'img' in inputs:
-            return self.from_ndarray(inputs)
+        #if 'img' in inputs:
+        #    return self.from_ndarray(inputs)
         return self.from_file(inputs)
 
 
