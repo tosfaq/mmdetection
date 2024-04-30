@@ -9,8 +9,8 @@ from .frame_sampling import BaseFrameSample, UniformRefFrameSample
 from .geometric import (GeomTransform, Rotate, ShearX, ShearY, TranslateX,
                         TranslateY)
 from .instaboost import InstaBoost
-from .loading import (FilterAnnotations, InferencerLoader, LoadDicomImage, load_dicom, LoadYOLOAnnotations,
-                      LoadAnnotations, LoadEmptyAnnotations, LoadImageFromNDArray,
+from .loading import (FilterAnnotations, MedInferencerLoader, InferencerLoader, LoadDicomImage, load_dicom,
+                      LoadYOLOAnnotations, LoadAnnotations, LoadEmptyAnnotations, LoadImageFromNDArray,
                       LoadMultiChannelImageFromFiles, LoadPanopticAnnotations,
                       LoadProposals, LoadTrackAnnotations)
 from .text_transformers import LoadTextAnnotations, RandomSamplingNegPos
@@ -25,7 +25,7 @@ from .transforms import (Albu, CachedMixUp, CachedMosaic, CopyPaste, CutOut,
 from .wrappers import MultiBranch, ProposalBroadcaster, RandomOrder
 
 __all__ = [
-    'PackDetInputs', 'ToTensor', 'ImageToTensor', 'Transpose',
+    'PackDetInputs', 'ToTensor', 'ImageToTensor', 'Transpose', 'MedInferencerLoader',
     'LoadImageFromNDArray', 'LoadAnnotations', 'LoadPanopticAnnotations',
     'LoadDicomImage', 'load_dicom', 'LoadYOLOAnnotations',
     'LoadMultiChannelImageFromFiles', 'LoadProposals', 'Resize', 'RandomFlip',

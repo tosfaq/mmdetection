@@ -172,7 +172,7 @@ class MedInferencer(BaseInferencer):
         if load_img_idx == -1:
             raise ValueError(
                 'LoadDicomImage is not found in the test pipeline')
-        pipeline_cfg[load_img_idx]['type'] = 'mmdet.InferencerLoader'
+        pipeline_cfg[load_img_idx]['type'] = 'mmdet.MedInferencerLoader'
         return Compose(pipeline_cfg)
 
     def _get_transform_idx(self, pipeline_cfg: ConfigType,
