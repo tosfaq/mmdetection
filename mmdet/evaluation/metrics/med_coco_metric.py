@@ -40,7 +40,7 @@ def print_metrics(y_true, y_pred, y_score, eval_results, level, logger):
     f1 = f1_score(y_true, y_pred)
     eval_results[f"{level}_F1"] = f1
 
-    logger.info(f"ACC: {accuracy:.2f}; P: {precision:.2f}; R: {recall:.2f}; F1: {f1:.2f}; ROC-AUC: {roc_auc:.2f}; AP: {ap:.2f}")
+    logger.info(f"ACC: {accuracy:.4f}; P: {precision:.4f}; R: {recall:.4f}; F1: {f1:.4f}; ROC-AUC: {roc_auc:.4f}; AP: {ap:.4f}")
 
 
 def get_folder_key(path, last_n=5, short=False, short_cut=3, preserve_npy=True):
