@@ -2,6 +2,8 @@
 import logging
 from typing import List, Optional, Sequence, Tuple, Union
 
+from mmdet.registry import MODELS
+
 import torch.nn as nn
 from mmengine.model import constant_init, kaiming_init, normal_init
 from mmengine.runner import load_checkpoint
