@@ -58,13 +58,13 @@ class SSDVGG(VGG_Custom, BaseModule):
                  init_cfg=None,
                  input_size=None,
                  l2_norm_scale=None,
-                 inplanes=1):
+                 in_channels=1):
         super(SSDVGG, self).__init__(
             depth,
             with_last_pool=with_last_pool,
             ceil_mode=ceil_mode,
             out_indices=out_indices,
-            inplanes=inplanes)
+            inplanes=in_channels)
 
         self.features.add_module(
             str(len(self.features)),
