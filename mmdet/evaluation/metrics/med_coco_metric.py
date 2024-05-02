@@ -393,6 +393,7 @@ class MedCocoMetric(BaseMetric):
             result['bboxes'] = pred['bboxes'].cpu().numpy()
             result['scores'] = pred['scores'].cpu().numpy()
             result['labels'] = pred['labels'].cpu().numpy()
+            print(list(pred.keys()))
             result['img_path'] = pred['img_path'].cpu().numpy()
             parent_path = os.sep.join(result['img_path'].split(os.sep)[:-1])
             folder_key = get_folder_key(parent_path)
