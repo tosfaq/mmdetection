@@ -268,7 +268,8 @@ class EfficientNet(BaseModule):
                          type='Constant',
                          layer=['_BatchNorm', 'GroupNorm'],
                          val=1)
-                 ]):
+                 ],
+                 in_channels=1):
         super(EfficientNet, self).__init__(init_cfg)
         assert arch in self.arch_settings, \
             f'"{arch}" is not one of the arch_settings ' \
@@ -303,7 +304,7 @@ class EfficientNet(BaseModule):
         self.layers = nn.ModuleList()
         self.layers.append(
             ConvModule(
-                in_channels=3,
+                in_channels=in_channels,
                 out_channels=self.in_channels,
                 kernel_size=block_cfg_0[0],
                 stride=block_cfg_0[3],
