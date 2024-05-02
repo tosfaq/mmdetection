@@ -29,7 +29,10 @@ def print_metrics(y_true, y_pred, y_score, eval_results, level, logger):
     except ValueError:  # Only one class present in y_true. ROC AUC score is not defined in that case.
         roc_auc = -1
     eval_results[f"{level}_ROC-AUC"] = roc_auc
-    ap = average_precision_score(y_true, y_score)
+    try:
+        ap = average_precision_score(y_true, y_score)
+    except IndexError:
+        ap = -1
     eval_results[f"{level}_AP"] = ap
     accuracy = accuracy_score(y_true, y_pred)
     eval_results[f"{level}_ACC"] = accuracy
