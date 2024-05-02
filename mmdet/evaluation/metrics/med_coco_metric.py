@@ -489,9 +489,9 @@ class MedCocoMetric(BaseMetric):
 
         series_keys = [key.split(os.sep)[1] for key in series_keys]
         series_keys_printable = '['+', '.join(series_keys)+']'
-        series_y_score_printable = '['+', '.join([float(f"{score:.3f}") for score in series_y_score])+']'
-        series_y_true_printable = '['+', '.join(series_y_true)+']'
-        series_y_pred_printable = '['+', '.join(series_y_pred)+']'
+        series_y_score_printable = '['+', '.join([f"{score:.3f}" for score in series_y_score])+']'
+        series_y_true_printable = '['+', '.join(list(map(str, series_y_true)))+']'
+        series_y_pred_printable = '['+', '.join(list(map(str, series_y_pred)))+']'
 
         # split gt and prediction list
         gts, preds = zip(*results)
