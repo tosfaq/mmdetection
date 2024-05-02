@@ -535,6 +535,11 @@ class MedCocoMetric(BaseMetric):
         logger.info(series_y_true, series_y_pred, series_y_score_printable)
         print_metrics(series_y_true, series_y_pred, series_y_score, eval_results=eval_results, level='series', logger=logger)
 
+        self.slice_y_true.clear()
+        self.slice_y_score.clear()
+        self.series_true.clear()
+        self.series_confs.clear()
+
         for metric in self.metrics:
             logger.info(f'Evaluating {metric}...')
 
@@ -703,25 +708,3 @@ class MedCocoMetric(BaseMetric):
             tmp_dir.cleanup()
         return eval_results
 
-    def evaluate(self, size: int) -> dict:
-        """Evaluate the model performance of the whole dataset after processing
-        all batches.
-
-        Args:
-            size (int): Length of the entire validation dataset. When batch
-                size > 1, the dataloader may pad some data samples to make
-                sure all ranks have the same length of dataset slice. The
-                ``collect_results`` function will drop the padded data based on
-                this size.
-
-        Returns:
-            dict: Evaluation metrics dict on the val dataset. The keys are the
-            names of the metrics, and the values are corresponding results.
-        """
-        # reset the slice/series lists/dicts
-        self.slice_y_true.clear()
-        self.slice_y_score.clear()
-        self.series_true.clear()
-        self.series_confs.clear()
-
-        super().evaluate(size=size)
