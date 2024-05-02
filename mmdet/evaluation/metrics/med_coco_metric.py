@@ -486,6 +486,8 @@ class MedCocoMetric(BaseMetric):
         series_y_score_printable = [float(f"{score:.3f}") for score in series_y_score]
 
         logger.info(f"Slice-Level Metrics (total {len(self.slice_y_true)})")
+        print('self.slice_y_true', self.slice_y_true, 'slice_y_pred', slice_y_pred, 'self.slice_y_score',
+              self.slice_y_score)
         print_metrics(self.slice_y_true, slice_y_pred, self.slice_y_score, logger=logger)
         logger.info(f"Series-Level Metrics (total {len(series_y_true)})")
         logger.info(series_keys)
