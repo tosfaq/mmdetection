@@ -23,16 +23,22 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
     average_precision_score
 
 
-def print_metrics(y_true, y_pred, y_score, logger):
+def print_metrics(y_true, y_pred, y_score, eval_results, level, logger):
     try:
         roc_auc = roc_auc_score(y_true, y_score)
     except ValueError:  # Only one class present in y_true. ROC AUC score is not defined in that case.
         roc_auc = -1
+    eval_results[f"{level}_ROC-AUC"] = roc_auc
     ap = average_precision_score(y_true, y_score)
+    eval_results[f"{level}_AP"] = ap
     accuracy = accuracy_score(y_true, y_pred)
+    eval_results[f"{level}_ACC"] = accuracy
     precision = precision_score(y_true, y_pred, zero_division=0)
+    eval_results[f"{level}_P"] = precision
     recall = recall_score(y_true, y_pred)
+    eval_results[f"{level}_R"] = recall
     f1 = f1_score(y_true, y_pred)
+    eval_results[f"{level}_F1"] = f1
 
     logger.info(f"ACC: {accuracy:.2f}; P: {precision:.2f}; R: {recall:.2f}; F1: {f1:.2f}; ROC-AUC: {roc_auc:.2f}; AP: {ap:.2f}")
 
@@ -485,16 +491,6 @@ class MedCocoMetric(BaseMetric):
         series_keys = '['+', '.join(series_keys)+']'
         series_y_score_printable = [float(f"{score:.3f}") for score in series_y_score]
 
-        logger.info(f"Slice-Level Metrics (total {len(self.slice_y_true)})")
-        print('self.slice_y_true', self.slice_y_true, 'slice_y_pred', slice_y_pred, 'self.slice_y_score',
-              self.slice_y_score)
-        print_metrics(self.slice_y_true, slice_y_pred, self.slice_y_score, logger=logger)
-        logger.info(f"Series-Level Metrics (total {len(series_y_true)})")
-        logger.info(series_keys)
-        logger.info(series_y_true, series_y_pred, series_y_score_printable)
-        print_metrics(series_y_true, series_y_pred, series_y_score, logger=logger)
-
-
         # split gt and prediction list
         gts, preds = zip(*results)
 
@@ -527,6 +523,15 @@ class MedCocoMetric(BaseMetric):
             logger.info('results are saved in '
                         f'{osp.dirname(outfile_prefix)}')
             return eval_results
+
+        logger.info(f"Slice-Level Metrics (total {len(self.slice_y_true)})")
+        print('self.slice_y_true', self.slice_y_true, 'slice_y_pred', slice_y_pred, 'self.slice_y_score',
+              self.slice_y_score)
+        print_metrics(self.slice_y_true, slice_y_pred, self.slice_y_score, eval_results=eval_results, level='slice', logger=logger)
+        logger.info(f"Series-Level Metrics (total {len(series_y_true)})")
+        logger.info(series_keys)
+        logger.info(series_y_true, series_y_pred, series_y_score_printable)
+        print_metrics(series_y_true, series_y_pred, series_y_score, eval_results=eval_results, level='series', logger=logger)
 
         for metric in self.metrics:
             logger.info(f'Evaluating {metric}...')
