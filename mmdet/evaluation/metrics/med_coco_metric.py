@@ -388,14 +388,12 @@ class MedCocoMetric(BaseMetric):
         """
         for data_sample in data_samples:
             result = dict()
-            print("data_sample.keys:", list(data_sample.keys()))
             pred = data_sample['pred_instances']
             result['img_id'] = data_sample['img_id']
             result['bboxes'] = pred['bboxes'].cpu().numpy()
             result['scores'] = pred['scores'].cpu().numpy()
             result['labels'] = pred['labels'].cpu().numpy()
-            print(list(pred.keys()))
-            result['img_path'] = pred['img_path'].cpu().numpy()
+            result['img_path'] = data_sample['img_path']
             parent_path = os.sep.join(result['img_path'].split(os.sep)[:-1])
             folder_key = get_folder_key(parent_path)
 
