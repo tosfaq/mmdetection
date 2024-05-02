@@ -488,10 +488,10 @@ class MedCocoMetric(BaseMetric):
         slice_y_pred = (np.array(self.slice_y_score) > conf_threshold).tolist()
 
         series_keys = [key.split(os.sep)[1] for key in series_keys]
-        series_keys_printable = '['+', '.join(series_keys)+']'
-        series_y_score_printable = '['+', '.join([f"{score:.3f}" for score in series_y_score])+']'
-        series_y_true_printable = '['+', '.join(list(map(str, series_y_true)))+']'
-        series_y_pred_printable = '['+', '.join(list(map(str, series_y_pred)))+']'
+        series_keys_printable = '['+', '.join([f"{item:>5}" for item in series_keys])+']'
+        series_y_score_printable = '['+', '.join([f"{item:.3f}" for item in series_y_score])+']'
+        series_y_true_printable = '['+', '.join([f"{item:>5}" for item in series_y_true])+']'
+        series_y_pred_printable = '['+', '.join([f"{item:>5}" for item in series_y_pred])+']'
 
         # split gt and prediction list
         gts, preds = zip(*results)
@@ -529,8 +529,10 @@ class MedCocoMetric(BaseMetric):
         logger.info(f"Slice-Level Metrics (total {len(self.slice_y_true)})")
         print_metrics(self.slice_y_true, slice_y_pred, self.slice_y_score, eval_results=eval_results, level='slice', logger=logger)
         logger.info(f"Series-Level Metrics (total {len(series_y_true)})")
-        logger.info(series_keys_printable)
-        logger.info(series_y_true_printable, series_y_pred_printable, series_y_score_printable)
+        logger.info(f"{'Series keys':>12}"+series_keys_printable)
+        logger.info(f"{'Series true':>12}"+series_y_true_printable)
+        logger.info(f"{'Series pred':>12}"+series_y_pred_printable)
+        logger.info(f"{'Series score':>12}"+series_y_score_printable)
         print_metrics(series_y_true, series_y_pred, series_y_score, eval_results=eval_results, level='series', logger=logger)
 
         self.slice_y_true.clear()
