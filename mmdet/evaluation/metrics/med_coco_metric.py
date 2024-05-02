@@ -458,6 +458,8 @@ class MedCocoMetric(BaseMetric):
                 self.series_confs[folder_key].append(max_conf_slice)
                 self.slice_y_score.append(max_conf_slice)
 
+                print("self.slice_y_true inside process()", self.slice_y_true)
+
                 for bbox, label in zip(boxes, labels):
                     gt['anns'].append({'bbox': bbox, 'bbox_label': label})
             # add converted result to the results list
