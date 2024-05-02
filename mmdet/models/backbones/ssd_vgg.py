@@ -105,7 +105,7 @@ class SSDVGG(VGG_Custom, BaseModule):
                           'deprecated, it has been moved to SSDNeck.')
 
     def init_weights(self, pretrained=None):
-        super(VGG, self).init_weights()
+        super(VGG_Custom, self).init_weights()
 
     def forward(self, x):
         """Forward function."""
