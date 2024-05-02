@@ -2,15 +2,16 @@
 import warnings
 
 import torch.nn as nn
-from mmcv.cnn import VGG
+# from mmcv.cnn import VGG
 from mmengine.model import BaseModule
 
 from mmdet.registry import MODELS
 from ..necks import ssd_neck
+from .custom_vgg import VGG_Custom
 
 
 @MODELS.register_module()
-class SSDVGG(VGG, BaseModule):
+class SSDVGG(VGG_Custom, BaseModule):
     """VGG Backbone network for single-shot-detection.
 
     Args:
@@ -56,13 +57,14 @@ class SSDVGG(VGG, BaseModule):
                  pretrained=None,
                  init_cfg=None,
                  input_size=None,
-                 l2_norm_scale=None):
-        # TODO: in_channels for mmcv.VGG
+                 l2_norm_scale=None,
+                 inplanes=1):
         super(SSDVGG, self).__init__(
             depth,
             with_last_pool=with_last_pool,
             ceil_mode=ceil_mode,
-            out_indices=out_indices)
+            out_indices=out_indices,
+            inplanes=inplanes)
 
         self.features.add_module(
             str(len(self.features)),
