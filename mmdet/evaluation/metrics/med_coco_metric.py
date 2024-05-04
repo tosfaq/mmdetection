@@ -479,6 +479,7 @@ class MedCocoMetric(BaseMetric):
                     gt['anns'].append({'bbox': bbox, 'bbox_label': label})
             # add converted result to the results list
             self.results.append((gt, result))
+            print("PROCESS: REPOPULATED VARIABLES")
 
     def compute_metrics(self, results: list) -> Dict[str, float]:
         """Compute the metrics from processed results.
@@ -780,6 +781,7 @@ class MedCocoMetric(BaseMetric):
         self.slice_y_score.clear()
         self.series_true.clear()
         self.series_confs.clear()
+        print("EVALUATE: CLEARING VARIABLES")
         return metrics[0]
 
 def _to_cpu(data: Any) -> Any:
