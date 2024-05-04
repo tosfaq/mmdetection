@@ -133,7 +133,6 @@ class MedCocoMetric(BaseMetric):
         self.slice_y_score = []
         self.series_true = defaultdict(bool)
         self.series_confs = defaultdict(list)
-        self.classes = classes
 
         # do class wise evaluation, default False
         self.classwise = classwise
