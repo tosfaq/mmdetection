@@ -19,6 +19,20 @@ from mmdet.registry import METRICS
 from mmdet.structures.mask import encode_mask_results
 from ..functional import eval_recalls
 
+import logging
+from abc import ABCMeta, abstractmethod
+from typing import Any, List, Optional, Sequence, Union
+
+from torch import Tensor
+
+from mmengine.dist import (broadcast_object_list, collect_results,
+                           is_main_process)
+from mmengine.fileio import dump
+from mmengine.logging import print_log
+from mmengine.structures import BaseDataElement
+
+
+
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, \
     average_precision_score
 
@@ -539,6 +553,11 @@ class MedCocoMetric(BaseMetric):
         logger.info(f"{'Series score':>12}"+series_y_score_printable)
         print_metrics(series_y_true, series_y_pred, series_y_score, eval_results=eval_results, level='series', logger=logger)
 
+        #self.slice_y_true.clear()
+        #self.slice_y_score.clear()
+        #self.series_true.clear()
+        #self.series_confs.clear()
+
         for metric in self.metrics:
             logger.info(f'Evaluating {metric}...')
 
@@ -722,9 +741,43 @@ class MedCocoMetric(BaseMetric):
             dict: Evaluation metrics dict on the val dataset. The keys are the
             names of the metrics, and the values are corresponding results.
         """
+        if len(self.results) == 0:
+            print_log(
+                f'{self.__class__.__name__} got empty `self.results`. Please '
+                'ensure that the processed results are properly added into '
+                '`self.results` in `process` method.',
+                logger='current',
+                level=logging.WARNING)
+
+        if self.collect_device == 'cpu':
+            results = collect_results(
+                self.results,
+                size,
+                self.collect_device,
+                tmpdir=self.collect_dir)
+        else:
+            results = collect_results(self.results, size, self.collect_device)
+
+        if is_main_process():
+            # cast all tensors in results list to cpu
+            results = _to_cpu(results)
+            _metrics = self.compute_metrics(results)  # type: ignore
+            # Add prefix to metric names
+            if self.prefix:
+                _metrics = {
+                    '/'.join((self.prefix, k)): v
+                    for k, v in _metrics.items()
+                }
+            metrics = [_metrics]
+        else:
+            metrics = [None]  # type: ignore
+
+        broadcast_object_list(metrics)
+
+        # reset the results list
+        self.results.clear()
         self.slice_y_true.clear()
         self.slice_y_score.clear()
         self.series_true.clear()
         self.series_confs.clear()
-
-        super().evaluate(size=size)
+        return metrics[0]
