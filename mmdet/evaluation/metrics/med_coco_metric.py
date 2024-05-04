@@ -436,7 +436,7 @@ class MedCocoMetric(BaseMetric):
             gt['width'] = data_sample['ori_shape'][1]
             gt['height'] = data_sample['ori_shape'][0]
             gt['img_id'] = data_sample['img_id']
-            if self._coco_api is None:
+            #if self._coco_api is None:
                 # TODO: Need to refactor to support LoadAnnotations
                 # assert 'instances' in data_sample, \
                 #     'ground truth is required for evaluation when ' \
@@ -453,31 +453,31 @@ class MedCocoMetric(BaseMetric):
                 #         'bbox_label': 1,
                 #     }
                 # ]
+            # start of indentation
+            assert 'gt_instances' in data_sample, \
+                'ground truth is required for evaluation when ' \
+                '`ann_file` is not provided'
 
-                assert 'gt_instances' in data_sample, \
-                    'ground truth is required for evaluation when ' \
-                    '`ann_file` is not provided'
+            gt['anns'] = []
 
-                gt['anns'] = []
+            boxes = data_sample['gt_instances']['bboxes'].detach().cpu().numpy()
+            labels = data_sample['gt_instances']['labels'].detach().cpu().numpy()
 
-                boxes = data_sample['gt_instances']['bboxes'].detach().cpu().numpy()
-                labels = data_sample['gt_instances']['labels'].detach().cpu().numpy()
+            slice_has_label = len(boxes) > 0
 
-                slice_has_label = len(boxes) > 0
+            # Update labels for series; add label for slice
+            self.slice_y_true.append(slice_has_label)
+            self.series_true[folder_key] |= slice_has_label
 
-                # Update labels for series; add label for slice
-                self.slice_y_true.append(slice_has_label)
-                self.series_true[folder_key] |= slice_has_label
+            if len(result['scores']) > 0:
+                max_conf_slice = result['scores'].max()
 
-                if len(result['scores']) > 0:
-                    max_conf_slice = result['scores'].max()
+            self.series_confs[folder_key].append(max_conf_slice)
+            self.slice_y_score.append(max_conf_slice)
 
-                self.series_confs[folder_key].append(max_conf_slice)
-                self.slice_y_score.append(max_conf_slice)
-                print("PROCESS: REPOPULATED VARIABLES")
-
-                for bbox, label in zip(boxes, labels):
-                    gt['anns'].append({'bbox': bbox, 'bbox_label': label})
+            for bbox, label in zip(boxes, labels):
+                gt['anns'].append({'bbox': bbox, 'bbox_label': label})
+            # end of indentation
             # add converted result to the results list
             self.results.append((gt, result))
 
@@ -782,7 +782,6 @@ class MedCocoMetric(BaseMetric):
         self.slice_y_score.clear()
         self.series_true.clear()
         self.series_confs.clear()
-        print("EVALUATE: CLEARING VARIABLES")
         return metrics[0]
 
 def _to_cpu(data: Any) -> Any:
