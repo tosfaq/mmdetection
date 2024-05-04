@@ -107,7 +107,8 @@ class Darknet(BaseModule):
                  act_cfg=dict(type='LeakyReLU', negative_slope=0.1),
                  norm_eval=True,
                  pretrained=None,
-                 init_cfg=None):
+                 init_cfg=None,
+                 in_channels=1):
         super(Darknet, self).__init__(init_cfg)
         if depth not in self.arch_settings:
             raise KeyError(f'invalid depth {depth} for darknet')
@@ -119,7 +120,7 @@ class Darknet(BaseModule):
 
         cfg = dict(conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg)
 
-        self.conv1 = ConvModule(3, 32, 3, padding=1, **cfg)
+        self.conv1 = ConvModule(in_channels, 32, 3, padding=1, **cfg)
 
         self.cr_blocks = ['conv1']
         for i, n_layers in enumerate(self.layers):
