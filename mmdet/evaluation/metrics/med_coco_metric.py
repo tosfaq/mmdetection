@@ -474,12 +474,13 @@ class MedCocoMetric(BaseMetric):
 
                 self.series_confs[folder_key].append(max_conf_slice)
                 self.slice_y_score.append(max_conf_slice)
+                print("PROCESS: REPOPULATED VARIABLES")
 
                 for bbox, label in zip(boxes, labels):
                     gt['anns'].append({'bbox': bbox, 'bbox_label': label})
             # add converted result to the results list
             self.results.append((gt, result))
-            print("PROCESS: REPOPULATED VARIABLES")
+
 
     def compute_metrics(self, results: list) -> Dict[str, float]:
         """Compute the metrics from processed results.
