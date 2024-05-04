@@ -119,7 +119,7 @@ class MedCocoMetric(BaseMetric):
                  prefix: Optional[str] = None,
                  sort_categories: bool = False,
                  use_mp_eval: bool = False,
-                 classes: Tuple = ('artifact', )) -> None:
+                 classes: tuple = ('artifact', )) -> None:
         super().__init__(collect_device=collect_device, prefix=prefix)
         # coco evaluation metrics
         self.metrics = metric if isinstance(metric, list) else [metric]
