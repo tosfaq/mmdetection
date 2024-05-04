@@ -727,4 +727,4 @@ class MedCocoMetric(BaseMetric):
         self.series_true.clear()
         self.series_confs.clear()
 
-        super().__init__(size=size)
+        super().evaluate(size=size)
