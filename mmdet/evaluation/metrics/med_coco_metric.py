@@ -118,8 +118,7 @@ class MedCocoMetric(BaseMetric):
                  collect_device: str = 'cpu',
                  prefix: Optional[str] = None,
                  sort_categories: bool = False,
-                 use_mp_eval: bool = False,
-                 classes: tuple = ('artifact', )) -> None:
+                 use_mp_eval: bool = False) -> None:
         super().__init__(collect_device=collect_device, prefix=prefix)
         # coco evaluation metrics
         self.metrics = metric if isinstance(metric, list) else [metric]
