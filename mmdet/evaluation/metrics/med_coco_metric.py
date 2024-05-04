@@ -118,7 +118,8 @@ class MedCocoMetric(BaseMetric):
                  collect_device: str = 'cpu',
                  prefix: Optional[str] = None,
                  sort_categories: bool = False,
-                 use_mp_eval: bool = False) -> None:
+                 use_mp_eval: bool = False,
+                 classes: Tuple = ('artifact', )) -> None:
         super().__init__(collect_device=collect_device, prefix=prefix)
         # coco evaluation metrics
         self.metrics = metric if isinstance(metric, list) else [metric]
@@ -133,6 +134,7 @@ class MedCocoMetric(BaseMetric):
         self.slice_y_score = []
         self.series_true = defaultdict(bool)
         self.series_confs = defaultdict(list)
+        self.classes = classes
 
         # do class wise evaluation, default False
         self.classwise = classwise
@@ -512,6 +514,9 @@ class MedCocoMetric(BaseMetric):
             coco_json_path = self.gt_to_coco_json(
                 gt_dicts=gts, outfile_prefix=outfile_prefix)
             self._coco_api = COCO(coco_json_path)
+
+        print('self._coco_api.get_cat_ids', self._coco_api.get_cat_ids)
+        print('self.dataset_meta[\'classes\']', self.dataset_meta['classes'])
 
         # handle lazy init
         if self.cat_ids is None:
