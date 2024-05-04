@@ -282,7 +282,6 @@ class MedCocoMetric(BaseMetric):
                 data['image_id'] = image_id
                 data['bbox'] = self.xyxy2xywh(bboxes[i])
                 data['score'] = float(scores[i])
-                print('results2json: label', label)
                 data['category_id'] = self.cat_ids[label]
                 bbox_json_results.append(data)
 
@@ -514,8 +513,6 @@ class MedCocoMetric(BaseMetric):
                 gt_dicts=gts, outfile_prefix=outfile_prefix)
             self._coco_api = COCO(coco_json_path)
 
-        print('self._coco_api.get_cat_ids', self._coco_api.get_cat_ids(cat_names=self.dataset_meta['classes']))
-        print('self.dataset_meta[\'classes\']', self.dataset_meta['classes'])
 
         # handle lazy init
         if self.cat_ids is None:
@@ -524,7 +521,6 @@ class MedCocoMetric(BaseMetric):
         if self.img_ids is None:
             self.img_ids = self._coco_api.get_img_ids()
 
-        print(self.cat_ids)
         # convert predictions to coco format and dump to json file
         result_files = self.results2json(preds, outfile_prefix)
 
