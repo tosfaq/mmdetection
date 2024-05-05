@@ -534,6 +534,7 @@ class CoDINOHead(DINOHead):
         else:
             attn_masks = None
 
+        print("aux_coords shapes:", [item.shape for item in aux_coords])
         aux_coords = torch.cat(aux_coords, dim=0)
         aux_labels = torch.cat(aux_labels, dim=0)
         aux_targets = torch.cat(aux_targets, dim=0)
